@@ -24,7 +24,7 @@ jobs:
           node-version: '20.x'
 
     - name: npm install, build, and test
-      working-directory: ./nd073-c2-Dental-Office-Virtual-Assistant/nd073-c2-Dental-Office-Virtual-Assistant
+      working-directory: nd073-c2-Dental-Office-Virtual-Assistant/starter/ContosoDentistryChatBot
       run: |
         npm install
         npm run build --if-present
@@ -66,4 +66,4 @@ jobs:
       with:
         app-name: Dentist-bot-Appservice
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: ./nd073-c2-Dental-Office-Virtual-Assistant/nd073-c2-Dental-Office-Virtual-Assistant
+        package: nd073-c2-Dental-Office-Virtual-Assistant/starter/ContosoDentistryChatBot
