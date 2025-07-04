@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  WORKING_DIR: nd073-c2-Dental-Office-Virtual-Assistant/starter/ContosoDentistryChatBot
+  WORKING_DIR: starter/ContosoDentistryChatBot
   NODE_VERSION: '20'              # la misma que tiene tu App Service
 
 jobs:
