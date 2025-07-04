@@ -72,7 +72,7 @@ jobs:
         with:
           client-id:      ${{ secrets.AZUREAPPSERVICE_CLIENTID_DED29219C9CE4A5188F83B1AF12FAB78 }}
           tenant-id:      ${{ secrets.AZUREAPPSERVICE_TENANTID_8AC9B901679A4A0A861FBEAAFBB89408 }}
-          subscription-id:${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_33F6158C6CEA4B5992CF540034F2F55E }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_33F6158C6CEA4B5992CF540034F2F55E }}
 
       # 4️⃣ Despliega
       - name: Deploy to Azure Web App
