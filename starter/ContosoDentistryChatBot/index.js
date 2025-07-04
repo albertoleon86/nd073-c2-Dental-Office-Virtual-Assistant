@@ -73,7 +73,7 @@ const SchedulerConfiguration = {
 }
 //pack each service configuration into 
 const configuration = {
-    QnAConfiguration,
+    //QnAConfiguration,
     LuisConfiguration,
     SchedulerConfiguration
 }
@@ -82,9 +82,8 @@ const configuration = {
 const myBot = new DentaBot(configuration, {});
 
 // Listen for incoming requests.
-server.post('/api/messages', (req, res) => {
-    adapter.processActivity(req, res, async (context) => {
-        // Route to main dialog.
+server.post('/api/messages', async (req, res) => {
+    await adapter.processActivity(req, res, async (context) => {
         await myBot.run(context);
     });
 });
