@@ -56,11 +56,11 @@ const onTurnErrorHandler = async (context, error) => {
 adapter.onTurnError = onTurnErrorHandler;
 
 // Map configuration values values from .env file into the required format for each service.
-const QnAConfiguration = {
-    knowledgeBaseId: process.env.QnAKnowledgebaseId,
-    endpointKey: process.env.QnAAuthKey,
-    host: process.env.QnAEndpointHostName
-};
+//const QnAConfiguration = {
+//    knowledgeBaseId: process.env.QnAKnowledgebaseId,
+//    endpointKey: process.env.QnAAuthKey,
+//    host: process.env.QnAEndpointHostName
+//};
 
 const LuisConfiguration = {
     applicationId: process.env.LuisAppId,

@@ -3,7 +3,7 @@
 
 const { ActivityHandler, MessageFactory } = require('botbuilder');
 
-const { QnAMaker } = require('botbuilder-ai');
+// const { QnAMaker } = require('botbuilder-ai');
 const DentistScheduler = require('./dentistscheduler');
 const IntentRecognizer = require("./intentrecognizer")
 
@@ -14,7 +14,7 @@ class DentaBot extends ActivityHandler {
         if (!configuration) throw new Error('[QnaMakerBot]: Missing parameter. configuration is required');
 
         // create a QnAMaker connector
-        this.QnAMaker = new QnAMaker()
+        //this.QnAMaker = new QnAMaker()
        
         // create a DentistScheduler connector
       
