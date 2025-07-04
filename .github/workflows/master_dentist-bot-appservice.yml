@@ -9,7 +9,7 @@ on:
 
 env:
   WORKING_DIR: starter/ContosoDentistryChatBot
-  NODE_VERSION: '20'              # la misma que tiene tu App Service
+  NODE_VERSION: '18'              # la misma que tiene tu App Service
 
 jobs:
   build:
