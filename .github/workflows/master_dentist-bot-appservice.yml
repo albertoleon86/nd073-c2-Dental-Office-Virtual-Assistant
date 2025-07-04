@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: '20.x'
           cache: 'npm'
-          cache-dependency-path: nd073-c2-Dental-Office-Virtual-Assistant/starter/ContosoDentistryChatBot/package-lock.json
+          cache-dependency-path: starter/ContosoDentistryChatBot/package-lock.json
 
       # 3️⃣ Instala dependencias y (opcional) build
       - name: npm install & build
