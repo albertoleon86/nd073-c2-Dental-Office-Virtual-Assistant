@@ -1,19 +1,24 @@
-var express = require("express");
-var app = express();
+const express = require('express');
+const app = express();
 
-app.get("/", (req, res, next) => {
-    res.json({ message: "hello world" })
-})
+app.use(express.json());          // <- NECESARIO para leer JSON
 
-app.get("/availability", (req, res, next) => {
-    res.json(["8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm"]);
+/* PING */
+app.get('/health', (_, res) => res.sendStatus(200));
+
+/* Rutas API */
+app.get('/', (_, res) => {
+  res.json({ message: 'hello world' });
 });
 
-app.post("/schedule", (req, res, next) => {
-    res.json(req.body);
+app.get('/availability', (_, res) => {
+  res.json(['8am', '9am', '10am', '11am', '12pm', '1pm', '2pm', '3pm', '4pm']);
 });
 
-const port = process.env.PORT || 3000
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+app.post('/schedule', (req, res) => {
+  res.json(req.body);             // echo de la cita recibida
 });
+
+/* Start server */
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Server running on port ${port}`));
