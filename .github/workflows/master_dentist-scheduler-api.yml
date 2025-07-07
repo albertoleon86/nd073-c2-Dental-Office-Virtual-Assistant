@@ -1,51 +1,54 @@
 # ============================================================
-# GitHub Actions – Deploy Dentist Scheduler API to Azure Web App
+#  Deploy Dentist Scheduler API to Azure Web App (GitHub Actions)
 # ============================================================
-# Requisitos previos:
-#   1. En el Web App, descarga el Publish Profile (.PublishSettings)
-#   2. En GitHub → Settings → Secrets → Actions
-#        crea  AZUREAPPSERVICE_PUBLISHPROFILE  y pega allí el XML
-#   3. Ajusta "branch: master" si tu rama principal es "main"
+# Requisitos:
+#   • El Web App se llama  dentist-scheduler-api
+#   • El recurso Web App ↑  y su Publish Profile (.PublishSettings)
+#     se ha guardado en el secreto:
+#         AZUREAPPSERVICE_PUBLISHPROFILE
 # ============================================================
 
 name: Deploy Dentist Scheduler API
 
 on:
   push:
-    branches: [ master ]        # cámbialo a main si es necesario
-  workflow_dispatch:
+    branches: [ master ]          # usa main si tu rama principal es main
+  workflow_dispatch:              # permite lanzarlo manualmente
 
 env:
-  WORKING_DIR: ContosoDentistryScheduler   # subcarpeta con package.json
+  WORKING_DIR: starter/ContosoDentistryScheduler   # <-- ruta real
   ZIP_NAME: release.zip
-  APP_NAME: dentist-scheduler-api          # nombre exacto del Web App
+  APP_NAME: dentist-scheduler-api
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
+      # 1) Obtener el código
+      - uses: actions/checkout@v4
 
-      - name: Set up Node 20 LTS
-        uses: actions/setup-node@v4
+      # 2) Configurar Node 20 LTS (cámbialo a '18.x' si prefieres)
+      - uses: actions/setup-node@v4
         with:
           node-version: '20.x'
 
+      # 3) Instalar dependencias
       - name: Install dependencies
         working-directory: ${{ env.WORKING_DIR }}
         run: npm ci
 
-      - name: Build (if present)
+      # 4) Build (si tu package.json define "build"; si no, se omite)
+      - name: Build
         working-directory: ${{ env.WORKING_DIR }}
         run: npm run build --if-present
 
+      # 5) Crear ZIP para desplegar
       - name: Create deployment ZIP
         working-directory: ${{ env.WORKING_DIR }}
         run: zip -r ../${{ env.ZIP_NAME }} ./*
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      # 6) Subir el artefacto al job deploy
+      - uses: actions/upload-artifact@v4
         with:
           name: scheduler-api
           path: ${{ env.ZIP_NAME }}
@@ -54,11 +57,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
+      # 1) Descargar el artefacto generado
+      - uses: actions/download-artifact@v4
         with:
           name: scheduler-api
 
+      # 2) Desplegar al Web App con el publish profile
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
