@@ -1,52 +1,64 @@
-# Docs: https://github.com/Azure/webapps-deploy
+# ============================================================
+#  Deploy Dentist Scheduler API to Azure Web App (OIDC login)
+# ============================================================
+#  Requisitos:
+#    • Web App: dentist-scheduler-api   (Linux, Node)
+#    • Identidad federada configurada y secretos:
+#        AZUREAPPSERVICE_CLIENTID_…
+#        AZUREAPPSERVICE_TENANTID_…
+#        AZUREAPPSERVICE_SUBSCRIPTIONID_…
+# ============================================================
 
-name: Build and deploy Node.js app to Azure Web App – Dentist-bot-Appservice
+name: Deploy Dentist Scheduler API
 
 on:
   push:
-    branches: [ master ]          # cámbialo a main si tu rama es main
+    branches: [ master ]          # cámbialo a main si tu rama principal es main
   workflow_dispatch:
 
 env:
-  WORKING_DIR: starter/ContosoDentistryChatBot
-  NODE_VERSION: '18'              # la misma que tiene tu App Service
+  WORKING_DIR: starter/ContosoDentistryScheduler  # carpeta real del API
+  ZIP_NAME: release.zip
+  APP_NAME: dentist-scheduler-api                 # nombre exacto del Web App
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read              # necesario para actions/checkout
+      contents: read
 
     steps:
-      # 1️⃣ Clona el repo
+      # 1 ▸ Checkout repo
       - uses: actions/checkout@v4
 
-      # 2️⃣ Configura Node + cache
-      - name: Set up Node.js version
-        uses: actions/setup-node@v4
+      # 2 ▸ Setup Node
+      - uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
-          cache: 'npm'
-          cache-dependency-path: starter/ContosoDentistryScheduler/package-lock.json
+          node-version: '20.x'      # pon '18.x' si lo prefieres
 
-      # 3️⃣ Instala dependencias y (opcional) build
-      - name: npm install & build
+      # 3 ▸ Install dependencies
+      - name: Install dependencies
         working-directory: ${{ env.WORKING_DIR }}
-        run: |
-          npm ci
-          npm run build --if-present
+        run: npm ci
 
-      # 4️⃣ Empaqueta los artefactos
-      - name: Zip artifact for deployment
+      # 4 ▸ Build (optional)
+      - name: Build (if present)
         working-directory: ${{ env.WORKING_DIR }}
-        run: zip -r ${{ github.workspace }}/release.zip .
+        run: npm run build --if-present
 
-      # 5️⃣ Sube artefacto
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+      # 5 ▸ Copy files to workspace root (elimina carpeta intermedia)
+      - name: Copy API files to workspace root
+        run: rsync -a ${{ env.WORKING_DIR }}/ ./
+
+      # 6 ▸ Create deployment ZIP (raíz del workspace)
+      - name: Create deployment zip
+        run: zip -r ${{ env.ZIP_NAME }} ./* -x ".git/*" ".github/*"
+
+      # 7 ▸ Upload artifact
+      - uses: actions/upload-artifact@v4
         with:
-          name: node-app
-          path: release.zip
+          name: scheduler-api
+          path: ${{ env.ZIP_NAME }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -56,29 +68,26 @@ jobs:
       contents: read
 
     steps:
-      # 1️⃣ Descarga artefacto
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
+      # 1 ▸ Download artifact
+      - uses: actions/download-artifact@v4
         with:
-          name: node-app
+          name: scheduler-api
 
-      # 2️⃣ Descomprime
-      - name: Unzip artifact
-        run: unzip release.zip -d deploy_dir
-
-      # 3️⃣ Login a Azure
-      - name: Azure login
+      # 2 ▸ Azure login (OIDC federated credentials)
+      - name: Azure login (OIDC)
         uses: azure/login@v2
         with:
-          client-id:      ${{ secrets.AZUREAPPSERVICE_CLIENTID_DED29219C9CE4A5188F83B1AF12FAB78 }}
-          tenant-id:      ${{ secrets.AZUREAPPSERVICE_TENANTID_8AC9B901679A4A0A861FBEAAFBB89408 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_33F6158C6CEA4B5992CF540034F2F55E }}
+          client-id:      ${{ secrets.AZUREAPPSERVICE_CLIENTID_FABCF1CD79CE46F6BC2FCE08842CA77D }}
+          tenant-id:      ${{ secrets.AZUREAPPSERVICE_TENANTID_9070E2D93A7B48B5B44740E8B0AF92A9 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_828001770F474AB59400C4225F4DC4A7 }}
 
-      # 4️⃣ Despliega
+      # 3 ▸ Deploy to Azure Web App
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: Dentist-bot-Appservice
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: deploy_dir
-
+          app-name: ${{ env.APP_NAME }}
+          slot-name: Production
+          package:  ${{ env.ZIP_NAME }}
+          clean: true        # limpia wwwroot antes de copiar
+          restart: true      # reinicia después del deploy
+          retry: true        # reintenta si hay conflicto 409
