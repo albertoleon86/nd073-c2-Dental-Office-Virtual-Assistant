@@ -1,27 +1,18 @@
 # ============================================================
-#  Deploy Dentist Scheduler API  ─  Azure Web App + OIDC login
-# ============================================================
-#  Requisitos previos
-#  1. El Web App ya tiene asignada una identidad federada con los
-#     valores que ves en los secretos:
-#        • AZUREAPPSERVICE_CLIENTID_…
-#        • AZUREAPPSERVICE_TENANTID_…
-#        • AZUREAPPSERVICE_SUBSCRIPTIONID_…
-#  2. El código del API vive en:
-#        starter/ContosoDentistryScheduler/
+#  Deploy Dentist Scheduler API to Azure Web App (OIDC login)
 # ============================================================
 
 name: Deploy Dentist Scheduler API
 
 on:
   push:
-    branches: [ master ]          # cambia a main si tu rama principal es main
+    branches: [ master ]          # cámbialo a main si tu rama principal es main
   workflow_dispatch:
 
 env:
-  WORKING_DIR: starter/ContosoDentistryScheduler
+  WORKING_DIR: starter/ContosoDentistryScheduler  # ruta real del API
   ZIP_NAME: release.zip
-  APP_NAME: dentist-scheduler-api      # nombre EXACTO del Web App
+  APP_NAME: dentist-scheduler-api                 # nombre exacto del Web App
 
 jobs:
   build:
@@ -30,30 +21,27 @@ jobs:
       contents: read
 
     steps:
-      # 1 ▸ Clonar el repo
-      - uses: actions/checkout@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-      # 2 ▸ Instalar Node (20 LTS — cambia a 18.x si lo prefieres)
-      - uses: actions/setup-node@v4
+      - name: Set up Node 20 LTS
+        uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '20.x'                    # pon '18.x' si prefieres
 
-      # 3 ▸ Instalar dependencias
       - name: Install dependencies
         working-directory: ${{ env.WORKING_DIR }}
         run: npm ci
 
-      # 4 ▸ Build (si existe script build)
-      - name: Build
+      - name: Build (if present)
         working-directory: ${{ env.WORKING_DIR }}
         run: npm run build --if-present
 
-      # 5 ▸ Crear ZIP en la raíz del runner
       - name: Create deployment zip
         run: zip -r ${{ env.ZIP_NAME }} ${{ env.WORKING_DIR }}/*
 
-      # 6 ▸ Subir artefacto al job deploy
-      - uses: actions/upload-artifact@v4
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
           name: scheduler-api
           path: ${{ env.ZIP_NAME }}
@@ -62,24 +50,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      id-token: write     # necesario para login OIDC
+      id-token: write       # necesario para login OIDC
       contents: read
 
     steps:
-      # 1 ▸ Descargar el zip
-      - uses: actions/download-artifact@v4
+      - name: Download artifact
+        uses: actions/download-artifact@v4
         with:
           name: scheduler-api
 
-      # 2 ▸ Iniciar sesión en Azure con credenciales federadas
       - name: Azure login (OIDC)
         uses: azure/login@v2
         with:
-          client-id:      ${{ secrets.AZUREAPPSERVICE_CLIENTID_FABCF1CD79CE46F6BC2FCE08842CA77D }}
-          tenant-id:      ${{ secrets.AZUREAPPSERVICE_TENANTID_9070E2D93A7B48B5B44740E8B0AF92A9 }}
-          subscription-id:${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_828001770F474AB59400C4225F4DC4A7 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_FABCF1CD79CE46F6BC2FCE08842CA77D }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_9070E2D93A7B48B5B44740E8B0AF92A9 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_828001770F474AB59400C4225F4DC4A7 }}
 
-      # 3 ▸ Desplegar al Web App
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
