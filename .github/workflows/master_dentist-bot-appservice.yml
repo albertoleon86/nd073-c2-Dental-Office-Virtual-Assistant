@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: '18.x'
           cache: 'npm'
-          cache-dependency-path: starter/ContosoDentistryChatBot/package-lock.json
+          cache-dependency-path: starter/ContosoDentistryScheduler/package-lock.json
 
       # 3️⃣ Instala dependencias y (opcional) build
       - name: npm install & build
